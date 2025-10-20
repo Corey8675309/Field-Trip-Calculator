@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Group Estimate Calculator</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function Calculator() {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="16" height="20" x="4" y="2" rx="2"/>
+                    <line x1="8" x2="16" y1="6" y2="6"/>
+                    <line x1="16" x2="16" y1="14" y2="18"/>
+                    <path d="M16 10h.01"/>
+                    <path d="M12 10h.01"/>
+                    <path d="M8 10h.01"/>
+                    <path d="M12 14h.01"/>
+                    <path d="M8 14h.01"/>
+                    <path d="M12 18h.01"/>
+                    <path d="M8 18h.01"/>
+                </svg>
+            );
+        }
+
+        function Users() {
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            );
+        }
+
+        function SchoolGroupCalculator() {
+            const [location, setLocation] = useState('science');
+            const [pricingTier, setPricingTier] = useState('title1');
+            const [students, setStudents] = useState('');
+            const [chaperones, setChaperones] = useState('');
+            const [addClasses, setAddClasses] = useState(false);
+            const [addMaterialsFee, setAddMaterialsFee] = useState(false);
+            const [addImax, setAddImax] = useState(false);
+            const [freeChaperones, setFreeChaperones] = useState(false);
+
+            const TAX_RATE = 0.0725;
+
+            const locationData = {
+                science: {
+                    name: 'Discovery Place Science',
+                    color: 'from-cyan-400 to-cyan-600',
+                    pricing: { title1: 10.95, fall: 13.95, spring: 15.95 },
+                    hasImax: true,
+                    hasMaterialsFee: true,
+                    classPrice: 8.95,
+                    imaxPrice: 8.95
+                },
+                huntersville: {
+                    name: 'Discovery Place Kids Huntersville',
+                    color: 'from-purple-400 to-purple-600',
+                    pricing: { title1: 8.95, fall: 9.95, spring: 11.95 },
+                    hasImax: false,
+                    hasMaterialsFee: false,
+                    classPrice: 8.95
+                },
+                rockingham: {
+                    name: 'Discovery Place Kids Rockingham',
+                    color: 'from-orange-400 to-orange-600',
+                    pricing: { allyear: 6.00 },
+                    hasImax: false,
+                    hasMaterialsFee: false,
+                    classPrice: 8.00
+                }
+            };
+
+            const currentLocation = locationData[location];
+
+            const calculateTotal = () => {
+                const numStudents = parseInt(students) || 0;
+                const numChaperones = parseInt(chaperones) || 0;
+                const totalGuests = numStudents + numChaperones;
+                const admissionPrice = currentLocation.pricing[pricingTier] || 0;
+                const studentAdmission = numStudents * admissionPrice;
+                const chaperoneAdmission = freeChaperones ? 0 : numChaperones * admissionPrice;
+                const admissionTotal = studentAdmission + chaperoneAdmission;
+                const classesTotal = addClasses ? numStudents * currentLocation.classPrice : 0;
+                const materialsFee = addMaterialsFee ? numStudents * 20 : 0;
+                const studentImax = addImax ? numStudents * currentLocation.imaxPrice : 0;
+                const chaperoneImax = addImax ? numChaperones * currentLocation.imaxPrice : 0;
+                const imaxTotal = studentImax + chaperoneImax;
+                const taxableSubtotal = admissionTotal + imaxTotal;
+                const tax = taxableSubtotal * TAX_RATE;
+                const subtotal = admissionTotal + classesTotal + materialsFee + imaxTotal;
+                const total = subtotal + tax;
+                const roundedEstimate = Math.ceil(total / 10) * 10;
+                return { studentAdmission, chaperoneAdmission, admissionTotal, classesTotal, materialsFee, studentImax, chaperoneImax, imaxTotal, subtotal, tax, total, totalGuests, roundedEstimate };
+            };
+
+            const { studentAdmission, chaperoneAdmission, admissionTotal, classesTotal, materialsFee, studentImax, chaperoneImax, imaxTotal, subtotal, tax, total, totalGuests, roundedEstimate } = calculateTotal();
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                    <div className="max-w-3xl mx-auto">
+                        <div className="bg-white rounded-lg shadow-xl p-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <Calculator />
+                                <h1 className="text-3xl font-bold text-gray-800">School Group Estimate Calculator</h1>
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">Select Location</label>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {Object.entries(locationData).map(([key, data]) => (
+                                        <button key={key} onClick={() => { setLocation(key); setPricingTier(Object.keys(data.pricing)[0]); setAddImax(false); }} className={`p-4 rounded-lg text-left transition-all ${location === key ? `bg-gradient-to-r ${data.color} text-white shadow-lg` : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                                            <span className="font-semibold text-lg">{data.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">Select Pricing</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {Object.entries(currentLocation.pricing).map(([tier, price]) => (
+                                        <button key={tier} onClick={() => setPricingTier(tier)} className={`p-3 rounded-lg transition-all ${pricingTier === tier ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                                            <div className="text-xs font-medium mb-1">{tier === 'title1' ? 'Title 1 (all year)' : tier === 'fall' ? 'Fall (8/19-12/31)' : tier === 'spring' ? 'Spring/Summer (1/1-8/12)' : 'All Year'}</div>
+                                            <div className="text-lg font-bold">${price.toFixed(2)}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mb-6 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2"><Users />Number of Students</label>
+                                    <input type="number" value={students} onChange={(e) => setStudents(e.target.value)} placeholder="0" className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-lg" min="0" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2"><Users />Number of Chaperones</label>
+                                    <input type="number" value={chaperones} onChange={(e) => setChaperones(e.target.value)} placeholder="0" className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-lg" min="0" />
+                                </div>
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3">Add-ons</label>
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="flex items-center p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                                            <input type="checkbox" checked={addClasses} onChange={(e) => { setAddClasses(e.target.checked); if (!e.target.checked) setAddMaterialsFee(false); }} className="w-5 h-5 text-indigo-600 rounded" />
+                                            <span className="ml-3 flex-1 font-medium text-gray-700">Classes - ${currentLocation.classPrice.toFixed(2)}<span className="text-sm text-green-600 ml-2">(Chaperones FREE)</span></span>
+                                        </label>
+                                        {addClasses && currentLocation.hasMaterialsFee && (
+                                            <div className="ml-8 mt-2">
+                                                <label className="flex items-center p-3 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                    <input type="checkbox" checked={addMaterialsFee} onChange={(e) => setAddMaterialsFee(e.target.checked)} className="w-4 h-4 text-indigo-600 rounded" />
+                                                    <span className="ml-3 flex-1 text-sm font-medium text-gray-700">Add Materials Fee - $20.00 per student<span className="text-xs text-green-600 ml-2">(tax-free)</span></span>
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {currentLocation.hasImax && (
+                                        <label className="flex items-center p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                                            <input type="checkbox" checked={addImax} onChange={(e) => setAddImax(e.target.checked)} className="w-5 h-5 text-indigo-600 rounded" />
+                                            <span className="ml-3 flex-1 font-medium text-gray-700">IMAX Documentaries & Planetarium - ${currentLocation.imaxPrice.toFixed(2)}<span className="text-sm text-amber-600 ml-2">(Chaperones charged)</span></span>
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="border-t-2 border-gray-200 pt-6 space-y-3">
+                                <div className="flex justify-between text-gray-600 text-sm">
+                                    <span>Total Guests:</span>
+                                    <span>{totalGuests} ({students || 0} students + {chaperones || 0} chaperones)</span>
+                                </div>
+                                
+                                <div className="space-y-2 bg-gray-50 p-3 rounded-lg">
+                                    <div className="flex justify-between text-gray-700">
+                                        <span className="font-medium">Admission - Students ({students || 0}):</span>
+                                        <span className="text-lg">${studentAdmission.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-gray-700">
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-medium">Admission - Chaperones ({chaperones || 0}):</span>
+                                            <label className="flex items-center cursor-pointer">
+                                                <input type="checkbox" checked={freeChaperones} onChange={(e) => setFreeChaperones(e.target.checked)} className="w-4 h-4 text-blue-600 rounded mr-1" />
+                                                <span className="text-xs text-blue-700 font-medium whitespace-nowrap">Make Free</span>
+                                            </label>
+                                        </div>
+                                        <span className="text-lg">{freeChaperones ? <span className="text-green-600 font-semibold">FREE</span> : `$${chaperoneAdmission.toFixed(2)}`}</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-800 font-semibold pt-2 border-t border-gray-300">
+                                        <span>Total Admission:</span>
+                                        <span className="text-lg">${admissionTotal.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                
+                                {addClasses && (
+                                    <div className="flex justify-between text-gray-700">
+                                        <span className="font-medium">Classes ({students || 0} students only):</span>
+                                        <span className="text-lg">${classesTotal.toFixed(2)} <span className="text-xs text-green-600">(tax-free)</span></span>
+                                    </div>
+                                )}
+                                
+                                {addMaterialsFee && (
+                                    <div className="flex justify-between text-gray-700">
+                                        <span className="font-medium">Materials Fee ({students || 0} students):</span>
+                                        <span className="text-lg">${materialsFee.toFixed(2)} <span className="text-xs text-green-600">(tax-free)</span></span>
+                                    </div>
+                                )}
+                                
+                                {addImax && (
+                                    <div className="space-y-2 bg-gray-50 p-3 rounded-lg">
+                                        <div className="flex justify-between text-gray-700">
+                                            <span className="font-medium">IMAX - Students ({students || 0}):</span>
+                                            <span className="text-lg">${studentImax.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700">
+                                            <span className="font-medium">IMAX - Chaperones ({chaperones || 0}):</span>
+                                            <span className="text-lg">${chaperoneImax.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-800 font-semibold pt-2 border-t border-gray-300">
+                                            <span>Total IMAX:</span>
+                                            <span className="text-lg">${imaxTotal.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="flex justify-between text-gray-700 pt-2 border-t border-gray-200">
+                                    <span className="font-medium">Subtotal:</span>
+                                    <span className="text-lg">${subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-700">
+                                    <span className="font-medium">Tax (7.25%):</span>
+                                    <span className="text-lg">${tax.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-2xl font-bold text-indigo-600 pt-3 border-t-2 border-gray-300">
+                                    <span>Calculated Total:</span>
+                                    <span>${total.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-2xl font-bold text-green-600 pt-2">
+                                    <span>Rounded Estimate:</span>
+                                    <span>${roundedEstimate.toFixed(2)}</span>
+                                </div>
+                                <p className="text-sm text-gray-500 text-right mt-1">(Rounded up to nearest $10)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<SchoolGroupCalculator />, document.getElementById('root'));
+    </script>
+</body>
+</html>
